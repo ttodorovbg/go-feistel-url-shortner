@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ttodorovbg/go-feistel-url-shortner/internal/cli"
+	"github.com/ttodorovbg/go-feistel-url-shortener/internal/cli"
 )
 
 func main() {
