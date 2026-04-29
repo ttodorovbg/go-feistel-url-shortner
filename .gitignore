@@ -21,6 +21,8 @@
 go.work
 go.work.sum
 
+main 
+
 # env file
 .env
 .lh

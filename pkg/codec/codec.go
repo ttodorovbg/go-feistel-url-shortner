@@ -27,7 +27,11 @@ type Codec struct {
 const base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const defaultRounds uint8 = 6
 
-var big62 = big.NewInt(62)
+const Base62 = 62
+
+const MaxLengthForFloat64 uint8 = 8
+
+var big62 = big.NewInt(Base62)
 
 func NewCodec(key string, args ...uint8) *Codec {
 	rounds := defaultRounds
@@ -87,7 +91,7 @@ func feistelBijective(counter *big.Int, rounds uint8, key string, domain *big.In
 
 	combined := new(big.Int).Or(new(big.Int).Lsh(L, uint(halfSize)), R)
 	if combined.Cmp(domain) >= 0 {
-		return feistelBijective(combined, rounds, key, domain)
+		return feistelBijective(combined, rounds, key, domain) // cycle-walk
 	}
 	return combined
 }
@@ -141,8 +145,8 @@ func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (stri
 
 	var domain *big.Int
 
-	if length <= 8 {
-		f := math.Pow(62, float64(length))
+	if length <= MaxLengthForFloat64 {
+		f := math.Pow(float64(Base62), float64(length))
 		domain = big.NewInt(int64(f))
 	} else {
 		domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
@@ -179,8 +183,8 @@ func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
 
 	var domain *big.Int
 
-	if length <= 8 {
-		f := math.Pow(62, float64(length))
+	if length <= int(MaxLengthForFloat64) {
+		f := math.Pow(float64(Base62), float64(length))
 		domain = big.NewInt(int64(f))
 	} else {
 		domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
@@ -197,4 +201,8 @@ func (c *Codec) GenerateHash(counter uint64, length uint8, args ...uint8) (strin
 
 func (c *Codec) ReverseHash(hash string, args ...uint8) (*big.Int, error) {
 	return ReverseHash(hash, c.key, args...)
+}
+
+func MaxCounterForLength(length uint8) int64 {
+	return new(big.Int).Exp(big62, big.NewInt(int64(length)), nil).Int64()
 }
