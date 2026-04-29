@@ -3,7 +3,7 @@ package cli
 import (
 	"flag"
 
-	"github.com/ttodorovbg/go-feistel-url-shortner/pkg/codec"
+	"github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 )
 
 func runEncode(args []string) (string, error) {

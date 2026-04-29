@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 
-	"github.com/ttodorovbg/go-feistel-url-shortner/pkg/codec"
+	"github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 )
 
 func runDecode(args []string) (string, error) {

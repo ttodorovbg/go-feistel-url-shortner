@@ -1,4 +1,4 @@
-module github.com/ttodorovbg/go-feistel-url-shortner
+module github.com/ttodorovbg/go-feistel-url-shortener
 
 go 1.25.1
 
