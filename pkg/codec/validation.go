@@ -13,7 +13,6 @@ const maxHashLength uint8 = 12
 const minKeyLength uint8 = 8
 const maxKeyLength uint8 = 36 // can use UUID
 
-// validateRounds checks if the provided rounds value is valid.
 func validateRounds(rounds uint8) error {
 	if rounds < minRounds || rounds > maxRounds {
 		return fmt.Errorf("invalid rounds: %d, must be between %d and %d", rounds, minRounds, maxRounds)
@@ -21,7 +20,6 @@ func validateRounds(rounds uint8) error {
 	return nil
 }
 
-// validateLength checks if the provided length value is valid.
 func validateLength(length uint8) error {
 	if length < 1 || length > maxHashLength {
 		return fmt.Errorf("invalid length: %d, must be between 1 and %d", length, maxHashLength)
@@ -29,7 +27,6 @@ func validateLength(length uint8) error {
 	return nil
 }
 
-// validateKey checks if the provided key length is valid.
 func validateKey(key string) error {
 	if len(key) < int(minKeyLength) || len(key) > int(maxKeyLength) {
 		return fmt.Errorf("invalid key length: %d, must be between %d and %d", len(key), minKeyLength, maxKeyLength)
@@ -38,7 +35,6 @@ func validateKey(key string) error {
 }
 
 func validateHash(hash string) error {
-	// check if base62 chars only using base62Alphabet
 	for _, c := range hash {
 		if !strings.ContainsRune(base62Alphabet, c) {
 			return fmt.Errorf("invalid hash character: %c", c)
@@ -47,12 +43,11 @@ func validateHash(hash string) error {
 	return nil
 }
 
-// computeMaxBase62 returns the maximum value (62^length - 1)
 func computeMaxBase62(length int64) *big.Int {
 
-	if length <= 8 {
+	if length <= int64(MaxLengthForFloat64) {
 		// Safe conversion from float64 to *big.Int for small exponents
-		f := math.Pow(62, float64(length)) - 1
+		f := math.Pow(float64(Base62), float64(length)) - 1
 		return big.NewInt(int64(f))
 	}
 	exponent := big.NewInt(length)
