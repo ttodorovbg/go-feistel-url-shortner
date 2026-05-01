@@ -7,29 +7,29 @@ import (
 	"strings"
 )
 
-const minRounds uint8 = 3
-const maxRounds uint8 = 10
-const maxHashLength uint8 = 12
-const minKeyLength uint8 = 8
-const maxKeyLength uint8 = 36 // can use UUID
+const MinRounds uint8 = 3
+const MaxRounds uint8 = 10
+const MaxHashLength uint8 = 12
+const MinKeyLength uint8 = 8
+const MaxKeyLength uint8 = 36 // can use UUID
 
 func validateRounds(rounds uint8) error {
-	if rounds < minRounds || rounds > maxRounds {
-		return fmt.Errorf("invalid rounds: %d, must be between %d and %d", rounds, minRounds, maxRounds)
+	if rounds < MinRounds || rounds > MaxRounds {
+		return fmt.Errorf("invalid rounds: %d, must be between %d and %d", rounds, MinRounds, MaxRounds)
 	}
 	return nil
 }
 
 func validateLength(length uint8) error {
-	if length < 1 || length > maxHashLength {
-		return fmt.Errorf("invalid length: %d, must be between 1 and %d", length, maxHashLength)
+	if length < 1 || length > MaxHashLength {
+		return fmt.Errorf("invalid length: %d, must be between 1 and %d", length, MaxHashLength)
 	}
 	return nil
 }
 
 func validateKey(key string) error {
-	if len(key) < int(minKeyLength) || len(key) > int(maxKeyLength) {
-		return fmt.Errorf("invalid key length: %d, must be between %d and %d", len(key), minKeyLength, maxKeyLength)
+	if len(key) < int(MinKeyLength) || len(key) > int(MaxKeyLength) {
+		return fmt.Errorf("invalid key length: %d, must be between %d and %d", len(key), MinKeyLength, MaxKeyLength)
 	}
 	return nil
 }
@@ -64,24 +64,4 @@ func validateCounter(counter uint64, length uint8) error {
 	}
 
 	return nil
-}
-
-func MinRounds() uint8 {
-	return minRounds
-}
-
-func MaxRounds() uint8 {
-	return maxRounds
-}
-
-func MaxHashLength() uint8 {
-	return maxHashLength
-}
-
-func MinKeyLength() uint8 {
-	return minKeyLength
-}
-
-func MaxKeyLength() uint8 {
-	return maxKeyLength
 }
