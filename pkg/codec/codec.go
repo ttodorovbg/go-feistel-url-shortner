@@ -21,24 +21,60 @@ import (
 
 type Codec struct {
 	key    string
+	length uint8
 	rounds uint8
 }
 
 const base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const defaultRounds uint8 = 6
-
 const Base62 = 62
-
 const MaxLengthForFloat64 uint8 = 8
+
+type Config struct {
+	Key    string
+	Length uint8
+	Rounds uint8
+}
+
+var defaultConfig = Config{
+	Key:    "",
+	Length: 8,
+	Rounds: 6,
+}
+
+type Option func(*Config)
 
 var big62 = big.NewInt(Base62)
 
-func NewCodec(key string, args ...uint8) *Codec {
-	rounds := defaultRounds
-	if len(args) > 0 {
-		rounds = args[0]
+func NewCodec(opts ...Option) *Codec {
+	config := defaultConfig
+
+	for _, opt := range opts {
+		opt(&config)
 	}
-	return &Codec{key: key, rounds: rounds}
+
+	return &Codec{
+		key:    config.Key,
+		length: config.Length,
+		rounds: config.Rounds,
+	}
+}
+
+func WithKey(key string) Option {
+	return func(c *Config) {
+		c.Key = key
+	}
+}
+
+func WithLength(n uint8) Option {
+	return func(c *Config) {
+		c.Length = n
+	}
+}
+
+func WithRounds(n uint8) Option {
+	return func(c *Config) {
+		c.Rounds = n
+	}
 }
 
 func toBase62(num *big.Int, length uint8) string {
@@ -124,7 +160,7 @@ func feistelInverse(scrambled *big.Int, rounds uint8, key string, domain *big.In
 
 func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (string, error) {
 
-	rounds := defaultRounds
+	rounds := defaultConfig.Rounds
 
 	if len(args) > 0 {
 		rounds = args[0]
@@ -166,7 +202,7 @@ func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
 		return nil, err
 	}
 
-	rounds := defaultRounds
+	rounds := defaultConfig.Rounds
 
 	if len(args) > 0 {
 		rounds = args[0]
@@ -195,12 +231,12 @@ func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
 	return feistelInverse(scrambled, rounds, key, domain), nil
 }
 
-func (c *Codec) GenerateHash(counter uint64, length uint8, args ...uint8) (string, error) {
-	return GenerateHash(counter, length, c.key, args...)
+func (c *Codec) GenerateHash(counter uint64) (string, error) {
+	return GenerateHash(counter, c.length, c.key, c.rounds)
 }
 
-func (c *Codec) ReverseHash(hash string, args ...uint8) (*big.Int, error) {
-	return ReverseHash(hash, c.key, args...)
+func (c *Codec) ReverseHash(hash string) (*big.Int, error) {
+	return ReverseHash(hash, c.key, c.rounds)
 }
 
 func MaxCounterForLength(length uint8) int64 {
