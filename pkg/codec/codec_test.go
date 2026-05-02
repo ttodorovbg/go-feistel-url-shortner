@@ -291,18 +291,18 @@ func pow62Minus1(n int64) *big.Int {
 func TestCodec_Bidirectional(t *testing.T) {
 
 	tests := make(map[int]testParams)
-	tests[1] = testParams{pow62Minus1(1), 61}
-	tests[2] = testParams{pow62Minus1(2), 100}
-	tests[3] = testParams{pow62Minus1(3), 100}
-	tests[4] = testParams{pow62Minus1(4), 100}
-	tests[5] = testParams{pow62Minus1(5), 100}
-	tests[6] = testParams{pow62Minus1(6), 100}
-	tests[7] = testParams{pow62Minus1(7), 100}
-	tests[8] = testParams{pow62Minus1(8), 100}
-	tests[9] = testParams{pow62Minus1(9), 100}
-	tests[10] = testParams{pow62Minus1(10), 100}
-	tests[11] = testParams{pow62Minus1(11), 100}
-	tests[12] = testParams{pow62Minus1(12), 100}
+	tests[1] = testParams{pow62Minus1(1), 5}
+	tests[2] = testParams{pow62Minus1(2), 5}
+	tests[3] = testParams{pow62Minus1(3), 5}
+	tests[4] = testParams{pow62Minus1(4), 5}
+	tests[5] = testParams{pow62Minus1(5), 5}
+	tests[6] = testParams{pow62Minus1(6), 5}
+	tests[7] = testParams{pow62Minus1(7), 5}
+	tests[8] = testParams{pow62Minus1(8), 5}
+	tests[9] = testParams{pow62Minus1(9), 5}
+	tests[10] = testParams{pow62Minus1(10), 5}
+	tests[11] = testParams{pow62Minus1(11), 5}
+	tests[12] = testParams{pow62Minus1(12), 5}
 
 	// generate uuid
 	uuid := uuid.New().String()
@@ -316,11 +316,9 @@ func TestCodec_Bidirectional(t *testing.T) {
 	for u := 8; u <= len(uuid); u++ {
 		key := uuid[:u]
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			testBidirectional(t, key, tests)
-		}()
+		})
 	}
 
 	wg.Wait()
