@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
 
 	"github.com/ttodorovbg/go-feistel-url-shortener/internal/cli"
 )
@@ -10,9 +10,8 @@ import (
 func main() {
 	result, err := cli.Execute()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
-	fmt.Fprintf(os.Stdout, "%s\n", result)
+	fmt.Println(result)
 }

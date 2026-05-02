@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"os"
 	"testing"
 
 	"github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
@@ -31,8 +30,7 @@ func TestRunDecode_FlagKey(t *testing.T) {
 
 func TestRunDecode_EnvKey(t *testing.T) {
 
-	os.Setenv("FEISTEL_URL_SHORTENER_KEY", "qweqweqwe")
-	defer os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
+	t.Setenv("FEISTEL_URL_SHORTENER_KEY", "qweqweqwe")
 
 	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6)
 	if err != nil {

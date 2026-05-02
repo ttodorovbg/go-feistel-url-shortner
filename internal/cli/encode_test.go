@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"os"
 	"testing"
 )
 
@@ -26,8 +25,7 @@ func TestRunEncode_FlagKey(t *testing.T) {
 
 func TestRunEncode_EnvKey(t *testing.T) {
 
-	os.Setenv("FEISTEL_URL_SHORTENER_KEY", "qweqweqwe")
-	defer os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
+	t.Setenv("FEISTEL_URL_SHORTENER_KEY", "qweqweqwe")
 
 	args := []string{
 		"--counter", "123",
@@ -45,8 +43,6 @@ func TestRunEncode_EnvKey(t *testing.T) {
 }
 
 func TestRunEncode_MissingKey(t *testing.T) {
-
-	os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
 
 	args := []string{
 		"--counter", "1",

@@ -16,7 +16,9 @@ func runEncode(args []string) (string, error) {
 	keyFlag := cmd.String("key", "", "secret key (optional if FEISTEL_URL_SHORTENER_KEY env is set)")
 	rounds := cmd.Uint("rounds", 6, "rounds")
 
-	cmd.Parse(args)
+	if err := cmd.Parse(args); err != nil {
+		return "", err
+	}
 
 	key, err := getKey(*keyFlag)
 	if err != nil {
