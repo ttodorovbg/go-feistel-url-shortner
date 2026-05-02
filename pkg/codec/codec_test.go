@@ -364,6 +364,6 @@ func testBidirectional(t *testing.T, key string, tests map[int]testParams) {
 func BenchmarkCodec_GenerateHash(b *testing.B) {
 	c := c.NewCodec(c.WithKey("super_secret_key"), c.WithLength(6))
 	for i := 0; b.Loop(); i++ {
-		c.GenerateHash(uint64(i))
+		_, _ = c.GenerateHash(uint64(i))
 	}
 }

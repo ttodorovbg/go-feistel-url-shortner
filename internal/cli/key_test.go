@@ -7,8 +7,7 @@ import (
 
 func TestGetKey_FlagPriority(t *testing.T) {
 
-	os.Setenv("FEISTEL_URL_SHORTENER_KEY", "env")
-	defer os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
+	t.Setenv("FEISTEL_URL_SHORTENER_KEY", "env")
 
 	key, err := getKey("flag")
 	if err != nil {
@@ -22,8 +21,7 @@ func TestGetKey_FlagPriority(t *testing.T) {
 
 func TestGetKey_FromEnv(t *testing.T) {
 
-	os.Setenv("FEISTEL_URL_SHORTENER_KEY", "env")
-	defer os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
+	t.Setenv("FEISTEL_URL_SHORTENER_KEY", "env")
 
 	key, err := getKey("")
 	if err != nil {
@@ -37,7 +35,7 @@ func TestGetKey_FromEnv(t *testing.T) {
 
 func TestGetKey_Error(t *testing.T) {
 
-	os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
+	_ = os.Unsetenv("FEISTEL_URL_SHORTENER_KEY")
 
 	_, err := getKey("")
 	if err == nil {
