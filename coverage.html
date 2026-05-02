@@ -1,0 +1,566 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>cmd: Go Coverage Report</title>
+		<style>
+			body {
+				background: whitesmoke;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: whitesmoke;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/ttodorovbg/go-feistel-url-shortener/cmd/main.go (0.0%)</option>
+				
+				<option value="file1">github.com/ttodorovbg/go-feistel-url-shortener/internal/cli/decode.go (85.7%)</option>
+				
+				<option value="file2">github.com/ttodorovbg/go-feistel-url-shortener/internal/cli/encode.go (92.3%)</option>
+				
+				<option value="file3">github.com/ttodorovbg/go-feistel-url-shortener/internal/cli/key.go (100.0%)</option>
+				
+				<option value="file4">github.com/ttodorovbg/go-feistel-url-shortener/internal/cli/root.go (83.3%)</option>
+				
+				<option value="file5">github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec/codec.go (99.0%)</option>
+				
+				<option value="file6">github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec/validation.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+        "os"
+
+        "github.com/ttodorovbg/go-feistel-url-shortener/internal/cli"
+)
+
+func main() <span class="cov0" title="0">{
+        result, err := cli.Execute()
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Fprintln(os.Stderr, err)
+                os.Exit(1)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Fprintf(os.Stdout, "%s\n", result)</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package cli
+
+import (
+        "errors"
+        "flag"
+
+        "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
+)
+
+func runDecode(args []string) (string, error) <span class="cov8" title="1">{
+
+        cmd := flag.NewFlagSet("decode", flag.ExitOnError)
+
+        hash := cmd.String("hash", "", "hash string")
+        keyFlag := cmd.String("key", "", "secret key (optional if FEISTEL_URL_SHORTENER_KEY env is set)")
+        rounds := cmd.Uint("rounds", 6, "rounds")
+
+        cmd.Parse(args)
+
+        if *hash == "" </span><span class="cov8" title="1">{
+                return "", errors.New("--hash is required")
+        }</span>
+
+        <span class="cov8" title="1">key, err := getKey(*keyFlag)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">counter, err := codec.ReverseHash(*hash, key, uint8(*rounds))
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">return string(counter.Text(10)), nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package cli
+
+import (
+        "flag"
+
+        "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
+)
+
+func runEncode(args []string) (string, error) <span class="cov8" title="1">{
+
+        // cmd := flag.NewFlagSet("encode", flag.ExitOnError)
+        cmd := flag.NewFlagSet("encode", flag.ErrorHandling(flag.ContinueOnError))
+
+        counter := cmd.Uint64("counter", 0, "")
+        length := cmd.Uint("length", 8, "")
+        keyFlag := cmd.String("key", "", "secret key (optional if FEISTEL_URL_SHORTENER_KEY env is set)")
+        rounds := cmd.Uint("rounds", 6, "rounds")
+
+        cmd.Parse(args)
+
+        key, err := getKey(*keyFlag)
+        if err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">hash, err := codec.GenerateHash(uint64(*counter), uint8(*length), key, uint8(*rounds))
+        if err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">return hash, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package cli
+
+import (
+        "errors"
+        "os"
+)
+
+func getKey(flagKey string) (string, error) <span class="cov8" title="1">{
+
+        if flagKey != "" </span><span class="cov8" title="1">{
+                return flagKey, nil
+        }</span>
+
+        <span class="cov8" title="1">envKey := os.Getenv("FEISTEL_URL_SHORTENER_KEY")
+        if envKey != "" </span><span class="cov8" title="1">{
+                return envKey, nil
+        }</span>
+
+        <span class="cov8" title="1">return "", errors.New("missing secret key")</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package cli
+
+import (
+        "errors"
+        "fmt"
+        "os"
+)
+
+func Execute() (string, error) <span class="cov8" title="1">{
+
+        if len(os.Args) &lt; 2 </span><span class="cov0" title="0">{
+                return "", errors.New("expected 'encode' or 'decode'")
+        }</span>
+
+        <span class="cov8" title="1">switch os.Args[1] </span>{
+        case "encode":<span class="cov8" title="1">
+                return runEncode(os.Args[2:])</span>
+        case "decode":<span class="cov8" title="1">
+                return runDecode(os.Args[2:])</span>
+        default:<span class="cov8" title="1">
+                return "", fmt.Errorf("unknown command: %s", os.Args[1])</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package codec
+
+import (
+        "crypto/sha256"
+        "encoding/binary"
+        "fmt"
+        "math"
+        "math/big"
+        "strings"
+)
+
+// https://www.ietf.org/rfc/rfc3986.txt
+/*
+
+   Characters that are allowed in a URI but do not have a reserved
+   purpose are called unreserved.  These include uppercase and lowercase
+   letters, decimal digits, hyphen, period, underscore, and tilde.
+
+      unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+*/
+
+type Codec struct {
+        key    string
+        length uint8
+        rounds uint8
+}
+
+const base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const Base62 = 62
+const MaxLengthForFloat64 uint8 = 8
+
+type Config struct {
+        Key    string
+        Length uint8
+        Rounds uint8
+}
+
+var defaultConfig = Config{
+        Key:    "",
+        Length: 8,
+        Rounds: 6,
+}
+
+type Option func(*Config)
+
+var big62 = big.NewInt(Base62)
+
+func NewCodec(opts ...Option) *Codec <span class="cov8" title="1">{
+        config := defaultConfig
+
+        for _, opt := range opts </span><span class="cov8" title="1">{
+                opt(&amp;config)
+        }</span>
+
+        <span class="cov8" title="1">return &amp;Codec{
+                key:    config.Key,
+                length: config.Length,
+                rounds: config.Rounds,
+        }</span>
+}
+
+func WithKey(key string) Option <span class="cov8" title="1">{
+        return func(c *Config) </span><span class="cov8" title="1">{
+                c.Key = key
+        }</span>
+}
+
+func WithLength(n uint8) Option <span class="cov8" title="1">{
+        return func(c *Config) </span><span class="cov8" title="1">{
+                c.Length = n
+        }</span>
+}
+
+func WithRounds(n uint8) Option <span class="cov8" title="1">{
+        return func(c *Config) </span><span class="cov8" title="1">{
+                c.Rounds = n
+        }</span>
+}
+
+func toBase62(num *big.Int, length uint8) string <span class="cov8" title="1">{
+        n := new(big.Int).Set(num)
+        chars := make([]byte, length)
+        mod := new(big.Int)
+
+        for i := int(length) - 1; i &gt;= 0; i-- </span><span class="cov8" title="1">{
+                n.DivMod(n, big62, mod)
+                chars[i] = base62Alphabet[mod.Int64()]
+        }</span>
+        <span class="cov8" title="1">return string(chars)</span>
+}
+
+func fromBase62(s string) *big.Int <span class="cov8" title="1">{
+        num := big.NewInt(0)
+        for _, c := range s </span><span class="cov8" title="1">{
+                index := int64(strings.IndexRune(base62Alphabet, c))
+                num.Mul(num, big62)
+                num.Add(num, big.NewInt(index))
+        }</span>
+        <span class="cov8" title="1">return num</span>
+}
+
+func roundFunction(right *big.Int, roundKey string, mod *big.Int) *big.Int <span class="cov8" title="1">{
+        data := fmt.Appendf(nil, "%s:%s", right.String(), roundKey)
+        hash := sha256.Sum256(data)
+        val := binary.BigEndian.Uint32(hash[0:4])
+        return new(big.Int).Mod(big.NewInt(int64(val)), mod)
+}</span>
+
+func feistelBijective(counter *big.Int, rounds uint8, key string, domain *big.Int) *big.Int <span class="cov8" title="1">{
+        bitLen := domain.BitLen()
+        halfSize := bitLen / 2
+
+        leftMask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), uint(halfSize)), big.NewInt(1))
+        rightMask := new(big.Int).Set(leftMask)
+
+        R := new(big.Int).And(counter, rightMask)
+        L := new(big.Int).Rsh(counter, uint(halfSize))
+        L.And(L, leftMask)
+
+        mod := new(big.Int).Lsh(big.NewInt(1), uint(halfSize))
+
+        for i := range rounds </span><span class="cov8" title="1">{
+                F := roundFunction(R, fmt.Sprintf("%s-%d", key, i), mod)
+                tmp := new(big.Int).Xor(L, F)
+                L, R = R, tmp
+        }</span>
+
+        <span class="cov8" title="1">combined := new(big.Int).Or(new(big.Int).Lsh(L, uint(halfSize)), R)
+        if combined.Cmp(domain) &gt;= 0 </span><span class="cov8" title="1">{
+                return feistelBijective(combined, rounds, key, domain) // cycle-walk
+        }</span>
+        <span class="cov8" title="1">return combined</span>
+}
+
+func feistelInverse(scrambled *big.Int, rounds uint8, key string, domain *big.Int) *big.Int <span class="cov8" title="1">{
+        bitLen := domain.BitLen()
+        halfSize := bitLen / 2
+
+        leftMask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), uint(halfSize)), big.NewInt(1))
+        rightMask := new(big.Int).Set(leftMask)
+
+        R := new(big.Int).And(scrambled, rightMask)
+        L := new(big.Int).Rsh(scrambled, uint(halfSize))
+        L.And(L, leftMask)
+
+        mod := new(big.Int).Lsh(big.NewInt(1), uint(halfSize))
+
+        for i := int(rounds) - 1; i &gt;= 0; i-- </span><span class="cov8" title="1">{
+                F := roundFunction(L, fmt.Sprintf("%s-%d", key, i), mod)
+                tmp := new(big.Int).Xor(R, F)
+                R, L = L, tmp
+        }</span>
+
+        <span class="cov8" title="1">combined := new(big.Int).Or(new(big.Int).Lsh(L, uint(halfSize)), R)
+        if combined.Cmp(domain) &gt;= 0 </span><span class="cov8" title="1">{
+                return feistelInverse(combined, rounds, key, domain) // cycle-walk
+        }</span>
+        <span class="cov8" title="1">return combined</span>
+}
+
+func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (string, error) <span class="cov8" title="1">{
+
+        rounds := defaultConfig.Rounds
+
+        if len(args) &gt; 0 </span><span class="cov8" title="1">{
+                rounds = args[0]
+        }</span>
+
+        <span class="cov8" title="1">if err := validateRounds(rounds); err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+        <span class="cov8" title="1">if err := validateLength(length); err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+        <span class="cov8" title="1">if err := validateKey(key); err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+        <span class="cov8" title="1">if err := validateCounter(counter, length); err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+
+        <span class="cov8" title="1">var domain *big.Int
+
+        if length &lt;= MaxLengthForFloat64 </span><span class="cov8" title="1">{
+                f := math.Pow(float64(Base62), float64(length))
+                domain = big.NewInt(int64(f))
+        }</span> else<span class="cov8" title="1"> {
+                domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
+        }</span>
+
+        <span class="cov8" title="1">scrambled := feistelBijective(big.NewInt(int64(counter)), rounds, key, domain)
+
+        return toBase62(scrambled, length), nil</span>
+}
+
+func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) <span class="cov8" title="1">{
+
+        if err := validateHash(hash); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">if err := validateKey(key); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">rounds := defaultConfig.Rounds
+
+        if len(args) &gt; 0 </span><span class="cov8" title="1">{
+                rounds = args[0]
+        }</span>
+
+        <span class="cov8" title="1">length := len(hash)
+
+        if err := validateRounds(rounds); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">if err := validateLength(uint8(length)); err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">var domain *big.Int
+
+        if length &lt;= int(MaxLengthForFloat64) </span><span class="cov8" title="1">{
+                f := math.Pow(float64(Base62), float64(length))
+                domain = big.NewInt(int64(f))
+        }</span> else<span class="cov8" title="1"> {
+                domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
+        }</span>
+
+        <span class="cov8" title="1">scrambled := fromBase62(hash)
+
+        return feistelInverse(scrambled, rounds, key, domain), nil</span>
+}
+
+func (c *Codec) GenerateHash(counter uint64) (string, error) <span class="cov8" title="1">{
+        return GenerateHash(counter, c.length, c.key, c.rounds)
+}</span>
+
+func (c *Codec) ReverseHash(hash string) (*big.Int, error) <span class="cov8" title="1">{
+        return ReverseHash(hash, c.key, c.rounds)
+}</span>
+
+func MaxCounterForLength(length uint8) int64 <span class="cov0" title="0">{
+        return new(big.Int).Exp(big62, big.NewInt(int64(length)), nil).Int64()
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package codec
+
+import (
+        "fmt"
+        "math"
+        "math/big"
+        "strings"
+)
+
+const MinRounds uint8 = 3
+const MaxRounds uint8 = 10
+const MaxHashLength uint8 = 12
+const MinKeyLength uint8 = 8
+const MaxKeyLength uint8 = 36 // can use UUID
+
+func validateRounds(rounds uint8) error <span class="cov8" title="1">{
+        if rounds &lt; MinRounds || rounds &gt; MaxRounds </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid rounds: %d, must be between %d and %d", rounds, MinRounds, MaxRounds)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func validateLength(length uint8) error <span class="cov8" title="1">{
+        if length &lt; 1 || length &gt; MaxHashLength </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid length: %d, must be between 1 and %d", length, MaxHashLength)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func validateKey(key string) error <span class="cov8" title="1">{
+        if len(key) &lt; int(MinKeyLength) || len(key) &gt; int(MaxKeyLength) </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid key length: %d, must be between %d and %d", len(key), MinKeyLength, MaxKeyLength)
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func validateHash(hash string) error <span class="cov8" title="1">{
+        for _, c := range hash </span><span class="cov8" title="1">{
+                if !strings.ContainsRune(base62Alphabet, c) </span><span class="cov8" title="1">{
+                        return fmt.Errorf("invalid hash character: %c", c)
+                }</span>
+        }
+        <span class="cov8" title="1">return nil</span>
+}
+
+func computeMaxBase62(length int64) *big.Int <span class="cov8" title="1">{
+
+        if length &lt;= int64(MaxLengthForFloat64) </span><span class="cov8" title="1">{
+                // Safe conversion from float64 to *big.Int for small exponents
+                f := math.Pow(float64(Base62), float64(length)) - 1
+                return big.NewInt(int64(f))
+        }</span>
+        <span class="cov8" title="1">exponent := big.NewInt(length)
+        max := new(big.Int).Exp(big62, exponent, nil)
+        return max.Sub(max, big.NewInt(1))</span>
+}
+
+func validateCounter(counter uint64, length uint8) error <span class="cov8" title="1">{
+        maxCounter := computeMaxBase62(int64(length))
+
+        counterBigInt := new(big.Int).SetUint64(counter)
+        if counterBigInt.Cmp(maxCounter) &gt; 0 </span><span class="cov8" title="1">{
+                return fmt.Errorf("invalid counter: %d, must be less than or equal %s", counter, maxCounter.String())
+        }</span>
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
