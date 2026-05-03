@@ -1,0 +1,45 @@
+# .golangci.yml
+version: "2" # Required for v2 schema & parser
+
+linters:
+  default: none # Opt out of implicit defaults for full control
+  enable:
+    # Core v2 defaults (high signal, keep these)
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+#     # Recommended additions (production-grade)
+#     - gocritic # Catches subtle bugs, performance issues, anti-patterns
+#     - gosec # Security vulnerability scanner
+#     - bodyclose # Prevents HTTP response body leaks (goroutine/memory)
+#     - nilerr # Catches `return nil` when `err != nil`
+#     - predeclared # Prevents shadowing built-ins (`len`, `copy`, `new`, etc.)
+#     - revive # Modern, fast, configurable replacement for deprecated `golint`
+#     - wastedassign # Finds redundant assignments (complements `ineffassign`)
+#     - tparallel # Catches incorrect `t.Parallel()` usage in tests
+
+# linters-settings:
+#   gocritic:
+#     disabled-checks:
+#       - hugeParam # Often too strict for modern Go interfaces
+#   revive:
+#     rules:
+#       - name: exported
+#         arguments:
+#           - disableStutteringCheck # Allows `pkg.Type` instead of `pkg.PkgType`
+#   gosec:
+#     excludes:
+#       - G104 # Ignore unhandled errors here (errcheck covers this better)
+
+# issues:
+#   max-issues-per-linter: 0
+#   max-same-issues: 0
+#   exclude-rules:
+#     # Skip heavy linters on test files (speeds up local runs)
+#     - path: _test\.go
+#       linters:
+#         - gosec
+#         - errcheck
+#         - govet
