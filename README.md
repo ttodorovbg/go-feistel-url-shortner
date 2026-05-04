@@ -1,3 +1,3 @@
-[![codecov](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener/branch/main/graph/badge.svg?token=YOUR_TOKEN)](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener)
+[![codecov](https://codecov.io/github/ttodorovbg/go-feistel-url-shortener/graph/badge.svg?token=TN14U5Y196)](https://codecov.io/github/ttodorovbg/go-feistel-url-shortener)
 
 test
