@@ -1,14 +1,14 @@
 name: Go Test & Lint
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
   push:
-    branches: ["**"]
+    branches: [main, master]
   pull_request:
-    branches: ["**"]
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   ci:
@@ -26,8 +26,21 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run tests with race detector & coverage
-        run: go test ./... -v -race -coverprofile=coverage.out
+      - name: Run tests with coverage
+        run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.out
+          flags: unittests
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload coverage reports to Codecov
+          uses: codecov/codecov-action@v5
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
