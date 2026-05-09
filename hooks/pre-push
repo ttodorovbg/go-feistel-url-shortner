@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+echo "Running pre-commit checks in parallel..."
+
+# Run lint and test in parallel, capture exit codes
+(
+  echo "Running golangci-lint..."
+  golangci-lint run --timeout=3m
+) &
+LINT_PID=$!
+
+(
+  echo "Running tests (fast mode)..."
+  # DON'T Skip race detector for speed; use -short to skip slow tests
+  go test ./... -timeout=2m
+) &
+TEST_PID=$!
+
+# Wait for both and collect exit codes
+wait $LINT_PID || LINT_EXIT=$?
+wait $TEST_PID || TEST_EXIT=$?
+
+# Final verdict
+if [[ "${LINT_EXIT:-0}" -ne 0 ]] || [[ "${TEST_EXIT:-0}" -ne 0 ]]; then
+  echo -e "${RED} Pre-commit checks failed!${NC}"
+  [[ "${LINT_EXIT:-0}" -ne 0 ]] && echo "  • golangci-lint failed (exit $LINT_EXIT)"
+  [[ "${TEST_EXIT:-0}" -ne 0 ]] && echo "  • go test failed (exit $TEST_EXIT)"
+  echo -e "\n Tip: Use ${GREEN}git commit --no-verify${NC} to bypass (not recommended)"
+  exit 1
+fi
+
+echo -e "${GREEN} All checks passed!${NC}"
+exit 0
