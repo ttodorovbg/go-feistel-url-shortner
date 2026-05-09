@@ -106,3 +106,24 @@ Workflow:
 ### Important Clarification:
 
 The output is cryptographically derived ciphertext, not a hash. Cryptographic hashes are one-way and irreversible by design. Feistel encryption is explicitly constructed to be decrypted, making it ideal for stateless short code resolution while maintaining unpredictability.
+
+## Metrics
+
+Here is a comparision with url shortenr with length **4 chars** for:
+
+- Random generation
+- Feistel generation
+
+Number of generated codes: **14 776 336**
+
+### Random code generation
+
+Total time for generation all codes: **20 6749ms**
+
+![random length4](docs/assets/random_length4.png)
+
+### Feistel code generation (4 rounds)
+
+Total time for generation all codes: **9 871ms**
+
+![feistel 4length 4rounds](docs/assets/feistel_4length_4rounds.png)
