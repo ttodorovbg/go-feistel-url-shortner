@@ -122,8 +122,52 @@ Total time for generation all codes: **20 6749ms**
 
 ![random length4](docs/assets/random_length4.png)
 
+### Counts Statistics
+
+| Metric  | Value      |
+| ------- | ---------- |
+| Average | 17.06      |
+| Median  | 2.00       |
+| Std Dev | 4,896.89   |
+| Min     | 1          |
+| Max     | 14,763,617 |
+
+### Time Statistics (milliseconds)
+
+| Metric  | Value          |
+| ------- | -------------- |
+| Average | 0.0140 ms      |
+| Median  | 0.0012 ms      |
+| Std Dev | 3.7794 ms      |
+| Min     | 0.0002 ms      |
+| Max     | 10,945.4333 ms |
+| P95     | 0.0162 ms      |
+| P99     | 0.0926 ms      |
+
 ### Feistel code generation (4 rounds)
 
 Total time for generation all codes: **9 871ms**
 
 ![feistel 4length 4rounds](docs/assets/feistel_4length_4rounds.png)
+
+### Counts Statistics
+
+| Metric  | Value |
+| ------- | ----- |
+| Average | 1.00  |
+| Median  | 1.00  |
+| Std Dev | 0     |
+| Min     | 1     |
+| Max     | 1     |
+
+### Time Statistics (milliseconds)
+
+| Metric  | Value     |
+| ------- | --------- |
+| Average | 0.0007 ms |
+| Median  | 0.0006 ms |
+| Std Dev | 0.0013 ms |
+| Min     | 0.0003 ms |
+| Max     | 3.9824 ms |
+| P95     | 0.0009 ms |
+| P99     | 0.0015 ms |
