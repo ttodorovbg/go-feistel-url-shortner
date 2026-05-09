@@ -171,3 +171,4 @@ Total time for generation all codes: **9 871ms**
 | Max     | 3.9824 ms |
 | P95     | 0.0009 ms |
 | P99     | 0.0015 ms |
+
