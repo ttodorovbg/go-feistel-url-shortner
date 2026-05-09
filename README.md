@@ -118,7 +118,7 @@ Number of generated codes: **14 776 336**
 
 ### Random code generation
 
-Total time for generation all codes: **20 6749ms**
+Total time for generation all codes: **206 749ms**
 
 ![random length4](docs/assets/random_length4.png)
 
@@ -132,21 +132,87 @@ Total time for generation all codes: **9 871ms**
 
 **Dataset:** 14,776,336 records (62^4 combinations) for each method
 
-| Metric | Random Generation | Feistel Generation |
-|--------|------------------|------------------|
-| **Counts Statistics** | | |
-| Average | 17.06 | 1.00 |
-| Median | 2.00 | 1.00 |
-| Std Dev | 4,896.89 | 0.00 |
-| Min | 1 | 1 |
-| Max | 14,763,617 | 1 |
-| **Time Statistics (milliseconds)** | | |
-| Average | 0.0140 ms | 0.0007 ms |
-| Median | 0.0012 ms | 0.0006 ms |
-| Std Dev | 3.7794 ms | 0.0013 ms |
-| Min | 0.0002 ms | 0.0003 ms |
-| Max | 10,945.4333 ms | 3.9824 ms |
-| P95 | 0.0162 ms | 0.0009 ms |
-| P99 | 0.0926 ms | 0.0015 ms |
+| Metric                             | Random Generation | Feistel Generation |
+| ---------------------------------- | ----------------- | ------------------ |
+| **Counts Statistics**              |                   |                    |
+| Average                            | 17.06             | 1.00               |
+| Median                             | 2.00              | 1.00               |
+| Std Dev                            | 4,896.89          | 0.00               |
+| Min                                | 1                 | 1                  |
+| Max                                | 14,763,617        | 1                  |
+| **Time Statistics (milliseconds)** |                   |                    |
+| Average                            | 0.0140 ms         | 0.0007 ms          |
+| Median                             | 0.0012 ms         | 0.0006 ms          |
+| Std Dev                            | 3.7794 ms         | 0.0013 ms          |
+| Min                                | 0.0002 ms         | 0.0003 ms          |
+| Max                                | 10,945.4333 ms    | 3.9824 ms          |
+| P95                                | 0.0162 ms         | 0.0009 ms          |
+| P99                                | 0.0926 ms         | 0.0015 ms          |
 
-## How to use it
+## Installation
+
+### As a Go Package
+
+Add the dependency to your project:
+
+```bash
+go get github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec
+```
+
+### As a CLI Tool
+
+Clone and build the binary:
+
+```bash
+git clone https://github.com/ttodorovbg/go-feistel-url-shortener.git
+cd go-feistel-url-shortener
+go build -o go-feistel-url-shortener ./cmd/main.go
+```
+
+Or install directly via Go:
+
+```bash
+go install github.com/ttodorovbg/go-feistel-url-shortener/cmd@latest
+```
+
+## Usage as a Package
+
+### Instance-Based API (Recommended)
+
+Create a configured codec instance and reuse it across your application:
+
+```go
+import "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
+
+length := 4
+c := codec.NewCodec(
+    codec.WithKey("123"),
+    codec.WithLength(uint8(length)),
+    codec.WithRounds(4),
+)
+
+// Generate a short code from a sequential counter
+code, err := c.GenerateHash(uint64(i))
+if err != nil {
+    // handle error
+}
+
+// Reverse a short code back to the original counter
+counter, err := c.ReverseHash("CWbL")
+if err != nil {
+    // handle error
+}
+// counter is *big.Int containing the original uint64 value
+```
+
+### Static Function API
+
+```go
+import "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
+
+// Generate with explicit parameters
+code, err := codec.GenerateHash(uint64(i), uint8(length), "123", 4)
+
+// Reverse with explicit parameters
+counter, err := codec.ReverseHash("CWbL", "123", 4)
+```
