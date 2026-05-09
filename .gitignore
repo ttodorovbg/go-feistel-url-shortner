@@ -29,3 +29,6 @@ coverage.out
 # env file
 .env
 .lh
+.benchmark
+*.bin
+*.prof

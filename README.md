@@ -1,3 +1,108 @@
-[![codecov](https://codecov.io/github/ttodorovbg/go-feistel-url-shortener/graph/badge.svg?token=TN14U5Y196)](https://codecov.io/github/ttodorovbg/go-feistel-url-shortener)
+# golang Feistel URL Shortener
 
-test
+[![Go Version](https://img.shields.io/github/go-mod/go-version/ttodorovbg/go-feistel-url-shortener?logo=go)](https://go.dev)
+[![License](https://img.shields.io/github/license/ttodorovbg/go-feistel-url-shortener)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ttodorovbg/go-feistel-url-shortener)](https://goreportcard.com/report/github.com/ttodorovbg/go-feistel-url-shortener)
+[![codecov](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener/branch/main/graph/badge.svg)](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener)
+[![Go Test & Lint](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml/badge.svg)](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml)
+
+## Core Requirements
+
+A production-ready URL shortener must balance two critical properties:
+
+| Requirement   | Why It Matters                                                                   |
+| ------------- | -------------------------------------------------------------------------------- |
+| Unpredictable | Prevents enumeration attacks, scraping, and unauthorized access to private links |
+| Reversible    | Enables fast resolution: short code to original URL without brute-force search   |
+
+Note: "Reversible" in this context means the system can map a short code back to its original URL, typically via a lookup table or cryptographic decryption. Base62 encoding alone is reversible (code to integer), but does not recover the original URL without additional storage or logic.
+
+---
+
+## Why Base62 Encoding?
+
+Most URL shorteners use Base62 encoding because it:
+
+- Uses only URL-safe characters: A-Z, a-z, 0-9
+- Avoids special characters that may require percent-encoding or cause issues in browsers, emails, or QR codes
+- Is simple to implement and decode
+- Provides a good balance of compactness and readability
+
+Reference: [https://en.wikipedia.org/wiki/Base62](https://en.wikipedia.org/wiki/Base62)
+
+### Character Set
+
+`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
+
+Total characters: 62
+
+### Capacity by Length
+
+The number of unique codes grows exponentially: 62^length
+
+| Length | Unique Codes                  | Approximate |
+| ------ | ----------------------------- | ----------- |
+| 1      | 62                            | 62          |
+| 2      | 3,844                         | 3.8K        |
+| 3      | 238,328                       | 238K        |
+| 4      | 14,776,336                    | 14.8M       |
+| 5      | 916,132,832                   | 916M        |
+| 6      | 56,800,235,584                | 56.8B       |
+| 7      | 3,521,614,606,208             | 3.5T        |
+| 8      | 218,340,105,584,896           | 218T        |
+| 9      | 13,537,086,546,263,552        | 13.5P       |
+| 10     | 839,299,365,868,340,224       | 839P        |
+| 11     | 52,036,560,683,837,093,888    | 52E         |
+| 12     | 3,226,266,762,397,899,821,056 | 3.2Z        |
+
+Rule of thumb: 7 characters (~3.5 trillion combinations) is sufficient for most public-facing services. 8+ characters future-proofs against exhaustion.
+
+---
+
+## RFC 3986: URL-Safe Characters
+
+All Base62 characters (0-9, A-Z, a-z) are unreserved per RFC 3986 Section 2.3 and never require percent-encoding.
+
+Reference: [https://tools.ietf.org/html/rfc3986#section-2.3](https://tools.ietf.org/html/rfc3986#section-2.3)
+
+## Capacity and Depletion Time Comparison
+
+### Base62
+
+| Length | Total Combinations      | At 100 codes/sec | At 1000 codes/sec |
+| ------ | ----------------------- | ---------------- | ----------------- |
+| 2      | 3,844                   | 38.4 seconds     | 3.8 seconds       |
+| 3      | 238,328                 | 39.7 minutes     | 4.0 minutes       |
+| 4      | 14,776,336              | 1.7 days         | 4.1 hours         |
+| 5      | 916,132,832             | 106.0 days       | 10.6 days         |
+| 6      | 56,800,235,584          | 18.0 years       | 1.8 years         |
+| 7      | 3,521,614,606,208       | 1.1K years       | 111.7 years       |
+| 8      | 218,340,105,584,896     | 69.2K years      | 6.9K years        |
+| 9      | 13,537,086,546,263,552  | 4.3M years       | 429.3K years      |
+| 10     | 839,299,365,868,340,224 | 266.1M years     | 26.6M years       |
+
+## Numeric adaptation of Feistel cipher
+
+How Feistel Shortener Works
+A Feistel-based URL shortener applies the Feistel cipher structure to sequential integers, transforming them into unpredictable, fixed-length short codes.
+
+[https://en.wikipedia.org/wiki/Feistel_cipher](https://en.wikipedia.org/wiki/Feistel_cipher)
+
+This approach combines the simplicity of auto-incrementing IDs with the security of cryptographic obfuscation.
+Workflow:
+
+- Input: A sequential integer (e.g., 1, 2, 3, ...) serves as the plaintext message. This is typically generated by a database sequence, atomic counter, or distributed ID generator.
+- Encryption: The integer is processed through a Feistel network using a fixed secret key. The cipher operates directly on the numeric domain, applying multiple rounds of modular arithmetic and shuffling.
+- Output Encoding: The resulting ciphertext is a unique integer within the same range as the input. This number is encoded into Base62 to produce the final short code.
+- Decryption: To resolve a short code, the Base62 string is decoded back to an integer, then decrypted using the same key and reversed round order. This recovers the original sequential ID instantly, without requiring a database lookup.
+
+### Key Characteristics:
+
+- Unpredictable: The output appears statistically random. Enumeration or brute-force attacks are infeasible without the secret key.
+- Reversible: The mapping is a strict mathematical bijection. Every valid short code corresponds to exactly one original ID.
+- Collision-Free: Because the Feistel structure is invertible within the defined domain, duplicate codes are mathematically impossible.
+- Fixed Range: The cipher operates within a domain of size 62^length. For a code length of N, it securely maps integers from 0 to 62^N - 1.
+
+### Important Clarification:
+
+The output is cryptographically derived ciphertext, not a hash. Cryptographic hashes are one-way and irreversible by design. Feistel encryption is explicitly constructed to be decrypted, making it ideal for stateless short code resolution while maintaining unpredictability.
