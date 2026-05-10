@@ -1,10 +1,11 @@
 # golang Feistel URL Shortener
 
 [![Go Version](https://img.shields.io/github/go-mod/go-version/ttodorovbg/go-feistel-url-shortener?logo=go)](https://go.dev)
-[![License](https://img.shields.io/github/license/ttodorovbg/go-feistel-url-shortener)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ttodorovbg/go-feistel-url-shortener)](https://goreportcard.com/report/github.com/ttodorovbg/go-feistel-url-shortener)
 [![codecov](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener/branch/main/graph/badge.svg)](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener)
 [![Go Test & Lint](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml/badge.svg)](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml)
+[![Release](https://img.shields.io/github/v/release/ttodorovbg/go-feistel-url-shortener?display_name=tag)](https://github.com/ttodorovbg/go-feistel-url-shortener/releases)
+[![License](https://img.shields.io/github/license/ttodorovbg/go-feistel-url-shortener)](LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ttodorovbg/go-feistel-url-shortener)](https://goreportcard.com/report/github.com/ttodorovbg/go-feistel-url-shortener)
 
 ## Core Requirements
 
