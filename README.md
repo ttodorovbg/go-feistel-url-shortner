@@ -184,26 +184,46 @@ Create a configured codec instance and reuse it across your application:
 ```go
 import "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 
-length := 4
 c := codec.NewCodec(
-    codec.WithKey("123"),
-    codec.WithLength(uint8(length)),
-    codec.WithRounds(4),
+    codec.WithKey(key),
+    codec.WithLength(length),
+    codec.WithRounds(rounds),
 )
 
 // Generate a short code from a sequential counter
-code, err := c.GenerateHash(uint64(i))
+code, err := c.GenerateHash(counter)
 if err != nil {
     // handle error
 }
 
 // Reverse a short code back to the original counter
-counter, err := c.ReverseHash("CWbL")
+counter, err := c.ReverseHash(shortCode)
 if err != nil {
     // handle error
 }
 // counter is *big.Int containing the original uint64 value
 ```
+
+### Instance Configuration (NewCodec)
+
+When creating a new instance using `codec.NewCodec()`, you can configure it using the following functional options:
+
+| Option       | Argument Type | Default | Constraints  | Description                                   |
+| :----------- | :------------ | :------ | :----------- | :-------------------------------------------- |
+| `WithKey`    | `string`      | `*No*`  | Min 16 chars | Sets the cryptographic salt for the instance. |
+| `WithLength` | `int`         | `7`     | `8` to `36`  | Sets the fixed length of generated hashes.    |
+| `WithRounds` | `int`         | `6`     | `1` to `10`  | Sets the number of obfuscation rounds.        |
+
+### Instance Methods
+
+Once the instance is created, you can use these methods to process data:
+
+| Method         | Input Type       | Return Type         | Description                                           |
+| :------------- | :--------------- | :------------------ | :---------------------------------------------------- |
+| `GenerateHash` | `counter uint64` | `(string, error)`   | Encodes the counter using instance settings.          |
+| `ReverseHash`  | `code string`    | `(*big.Int, error)` | Decodes a hash back to its original `*big.Int` value. |
+
+> **Note:** The instance-based API is **thread-safe** and more efficient for multiple operations as it pre-calculates configuration states.
 
 ### Static Function API
 
@@ -211,8 +231,31 @@ if err != nil {
 import "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 
 // Generate with explicit parameters
-code, err := codec.GenerateHash(uint64(i), uint8(length), "123", 4)
+code, err := codec.GenerateHash(counter, length, key, rounds)
 
 // Reverse with explicit parameters
-counter, err := codec.ReverseHash("CWbL", "123", 4)
+counter, err := codec.ReverseHash(shortCode, key, rounds)
 ```
+
+### Configuration & Parameters
+
+The following parameters are used to configure the behavior of the codec. When using `NewCodec`, these are passed as functional options.
+
+| Parameter | Type     | Default    | Valid Values / Validation | Description                                     |
+| :-------- | :------- | :--------- | :------------------------ | :---------------------------------------------- |
+| `key`     | `string` | **NO**     | Range: `8` - `36` chars   | Used for salt and encryption of the hash.       |
+| `length`  | `uint8`  | `7`        | Range: `1` - `10`         | The desired length of the generated short code. |
+| `rounds`  | `uint8`  | `6`        | `3` to `10`               | Number of obfuscation rounds.                   |
+| `counter` | `uint64` | _Required_ | `> 0`                     | The sequential ID you want to encode/hash.      |
+
+> **Note:** If any parameter fails validation, the functions will return a non-nil `error`.
+
+### API Return Types
+
+| Method         | Return Type         | Description                                                         |
+| :------------- | :------------------ | :------------------------------------------------------------------ |
+| `GenerateHash` | `(string, error)`   | Returns the short code or an error if parameters are invalid.       |
+| `ReverseHash`  | `(*big.Int, error)` | Returns the original value as a `*big.Int` to handle large numbers. |
+
+> **Pro Tip:** To convert a `*big.Int` result back to `uint64`, you can use the `.Uint64()` method:  
+> `originalValue := counter.Uint64()`
