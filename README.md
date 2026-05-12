@@ -3,7 +3,7 @@
 [![Go Version](https://img.shields.io/github/go-mod/go-version/ttodorovbg/go-feistel-url-shortener?logo=go)](https://go.dev)
 [![codecov](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener/branch/main/graph/badge.svg)](https://codecov.io/gh/ttodorovbg/go-feistel-url-shortener)
 [![Go Test & Lint](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml/badge.svg)](https://github.com/ttodorovbg/go-feistel-url-shortener/actions/workflows/ci.yaml)
-[![Release](https://img.shields.io/github/v/release/ttodorovbg/go-feistel-url-shortener?display_name=tag)](https://github.com/ttodorovbg/go-feistel-url-shortener/releases)
+[![GitHub Tag](https://img.shields.io/github/v/tag/ttodorovbg/go-feistel-url-shortener)](https://github.com/ttodorovbg/go-feistel-url-shortener/tags)
 [![License](https://img.shields.io/github/license/ttodorovbg/go-feistel-url-shortener)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ttodorovbg/go-feistel-url-shortener)](https://goreportcard.com/report/github.com/ttodorovbg/go-feistel-url-shortener)
 
@@ -209,11 +209,11 @@ if err != nil {
 
 When creating a new instance using `codec.NewCodec()`, you can configure it using the following functional options:
 
-| Option       | Argument Type | Default | Constraints       | Description                                   |
-| :----------- | :------------ | :------ | :---------------- | :-------------------------------------------- |
-| `WithKey`    | `string`      | `*No*`  | `8` to `36` chars | Sets the cryptographic salt for the instance. |
-| `WithLength` | `int`         | `7`     | `1` to `12`       | Sets the fixed length of generated hashes.    |
-| `WithRounds` | `int`         | `6`     | `1` to `10`       | Sets the number of obfuscation rounds.        |
+| Option       | Argument Type | Default             | Constraints       | Description                                   |
+| :----------- | :------------ | :------------------ | :---------------- | :-------------------------------------------- |
+| `WithKey`    | `string`      | **`No`**/_required_ | `8` to `36` chars | Sets the cryptographic salt for the instance. |
+| `WithLength` | `int`         | `7`                 | `1` to `12`       | Sets the fixed length of generated hashes.    |
+| `WithRounds` | `int`         | `6`                 | `1` to `10`       | Sets the number of obfuscation rounds.        |
 
 ### Instance Methods
 
@@ -231,23 +231,27 @@ Once the instance is created, you can use these methods to process data:
 ```go
 import "github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 
-// Generate with explicit parameters
+// Generate hash code with all parameters
 code, err := codec.GenerateHash(counter, length, key, rounds)
+// Generate Hash code with all parameters with default rounds
+code, err := codec.GenerateHash(counter, length, key)
 
-// Reverse with explicit parameters
+// Reverse hash code with all parameters
 counter, err := codec.ReverseHash(shortCode, key, rounds)
+// Reverse hash code with all parameters with default rounds
+counter, err := codec.ReverseHash(shortCode, key)
 ```
 
 ### Configuration & Parameters
 
 The following parameters are used to configure the behavior of the codec. When using `NewCodec`, these are passed as functional options.
 
-| Parameter | Type     | Default        | Valid Values / Validation | Description                                     |
-| :-------- | :------- | :------------- | :------------------------ | :---------------------------------------------- |
-| `key`     | `string` | **NO**         | Range: `8` - `36` chars   | Used for salt and encryption of the hash.       |
-| `length`  | `uint8`  | `7`            | Range: `1` - `12`         | The desired length of the generated short code. |
-| `rounds`  | `uint8`  | `6`            | `3` to `10`               | Number of obfuscation rounds.                   |
-| `counter` | `uint64` | _Required_ | `> 0`                     | The sequential ID you want to encode/hash.      |
+| Parameter | Type     | Default             | Valid Values / Validation | Description                                     |
+| :-------- | :------- | :------------------ | :------------------------ | :---------------------------------------------- |
+| `key`     | `string` | **`No`**/_required_ | Range: `8` - `36` chars   | Used for salt and encryption of the hash.       |
+| `length`  | `uint8`  | **`No`**/_required_ | Range: `1` - `12`         | The desired length of the generated short code. |
+| `rounds`  | `uint8`  | `6`                 | `3` to `10`               | Number of obfuscation rounds.                   |
+| `counter` | `uint64` | **`No`**/_required_ | `> 0`                     | The sequential ID you want to encode/hash.      |
 
 > **Note:** If any parameter fails validation, the functions will return a non-nil `error`.
 
