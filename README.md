@@ -308,3 +308,48 @@ CWbL
 $ ./shortener decode -hash="CWbL" -key="demo"
 42
 ```
+
+## Handle Errors Example
+
+```go
+import "errors"
+
+func handleCodecError(err error) {
+    if err == nil {
+        return
+    }
+
+    // 1. Check for ErrInvalidRounds
+    var roundsErr *ErrInvalidRounds
+    if errors.As(err, &roundsErr) {
+        // Handle rounds-specific logic
+    }
+
+    // 2. Check for ErrInvalidHashChar
+    var charErr *ErrInvalidHashChar
+    if errors.As(err, &charErr) {
+        // Handle invalid character
+    }
+
+    // 3. Check for ErrInvalidHashLength
+    var lenErr *ErrInvalidHashLength
+    if errors.As(err, &lenErr) {
+        // Handle length mismatch
+    }
+
+    // 4. Check for ErrInvalidKeyLength
+    var keyErr *ErrInvalidKeyLength
+    if errors.As(err, &keyErr) {
+        // Handle key validation failure
+    }
+
+    // 5. Check for ErrInvalidCounter
+    var counterErr *ErrInvalidCounter
+    if errors.As(err, &counterErr) {
+        // Handle out-of-range counter
+    }
+
+    // Fallback: unknown/unexpected error
+    panic(fmt.Errorf("unexpected codec error: %w", err))
+}
+```

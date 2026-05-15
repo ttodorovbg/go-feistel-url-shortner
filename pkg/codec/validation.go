@@ -42,7 +42,6 @@ type ErrInvalidCounter struct {
 	Max     big.Int
 }
 
-// Имплементиране на error интерфейса
 func (e *ErrInvalidRounds) Error() string {
 	return fmt.Sprintf("invalid rounds: %d, must be between %d and %d", e.Value, e.Min, e.Max)
 }
