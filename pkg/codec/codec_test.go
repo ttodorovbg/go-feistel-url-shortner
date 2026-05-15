@@ -6,7 +6,6 @@ import (
 	"math/big"
 	"math/rand"
 	"reflect"
-	"strconv"
 	"sync"
 	"testing"
 
@@ -127,57 +126,57 @@ func TestCodec_GenerateHash_ValidationErrors(t *testing.T) {
 		{"0", args{1088, 4, []string{}, 6}, "CWbL", false, nil},
 		// rounds
 		{"1", args{1088, 4, []string{}, 0}, "", true,
-			fmt.Errorf("invalid rounds: %d, must be between %d and %d", 0, c.MinRounds, c.MaxRounds)},
-		{"2", args{1088, 4, []string{}, 2}, "",
-			true, fmt.Errorf("invalid rounds: %d, must be between %d and %d", 2, c.MinRounds, c.MaxRounds)},
+			&c.ErrInvalidRounds{0, c.MinRounds, c.MaxRounds}},
+		{"2", args{1088, 4, []string{}, 2}, "", true,
+			&c.ErrInvalidRounds{2, c.MinRounds, c.MaxRounds}},
 		{"3", args{1088, 4, []string{}, c.MinRounds}, "k8EG", false, nil},
 		{"4", args{1088, 4, []string{}, c.MaxRounds}, "HnyD", false, nil},
 		{"5", args{1088, 4, []string{}, 11}, "", true,
-			fmt.Errorf("invalid rounds: %d, must be between %d and %d", 11, c.MinRounds, c.MaxRounds)},
-		// length
+			&c.ErrInvalidRounds{11, c.MinRounds, c.MaxRounds}},
+		// hash length
 		{"6", args{1088, 0, []string{}, 6}, "", true,
-			fmt.Errorf("invalid length: %d, must be between %d and %d", 0, 1, c.MaxHashLength)},
+			&c.ErrInvalidHashLength{0, 1, c.MaxHashLength}},
 		{"7", args{55, 1, []string{}, 6}, "7", false, nil},
 		{"8", args{1088, 12, []string{}, 6}, "1Xws6JAs85q2", false, nil},
 		{"9", args{1088, 11, []string{}, 6}, "BzblHvJwBwM", false, nil},
 		{"10", args{1088, 10, []string{}, 6}, "XMsA24WCQc", false, nil},
 		{"11", args{1088, 9, []string{}, 6}, "1CdQuSDlO", false, nil},
 		{"12", args{1088, 13, []string{}, 6}, "", true,
-			fmt.Errorf("invalid length: %d, must be between %d and %d", 13, 1, c.MaxHashLength)},
+			&c.ErrInvalidHashLength{13, 1, c.MaxHashLength}},
 		// key
 		{"13", args{1088, 10, []string{""}, 6}, "", true,
-			fmt.Errorf("invalid key length: %d, must be between %d and %d", 0, c.MinKeyLength, c.MaxKeyLength)},
+			&c.ErrInvalidKeyLength{0, c.MinKeyLength, c.MaxKeyLength}},
 		{"14", args{1088, 10, []string{"Test123"}, 6}, "", true,
-			fmt.Errorf("invalid key length: %d, must be between %d and %d", 7, c.MinKeyLength, c.MaxKeyLength)},
+			&c.ErrInvalidKeyLength{7, c.MinKeyLength, c.MaxKeyLength}},
 		{"15", args{1088, 10, []string{"Test1234"}, 6}, "oBdKMC7sRt", false, nil},
 		{"16", args{1088, 10, []string{"SUPER SECRET TEST KEY 01234567891234"}, 6}, "7PMPi0WK4c", false, nil},
 		{"17", args{1088, 10, []string{"SUPER SECRET TEST KEY 012345678912345"}, 6}, "", true,
-			fmt.Errorf("invalid key length: %d, must be between %d and %d", 37, c.MinKeyLength, c.MaxKeyLength)},
+			&c.ErrInvalidKeyLength{37, c.MinKeyLength, c.MaxKeyLength}},
 		// counter
 		{"18", args{61, 1, []string{}, 6}, "a", false, nil},
 		{"19", args{62, 1, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 62, strconv.FormatFloat(math.Pow(float64(c.Base62), 1)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(62), *big.NewInt(0), *big.NewInt(61)}},
 		{"20", args{3843, 2, []string{}, 6}, "c3", false, nil},
 		{"21", args{3844, 2, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 3844, strconv.FormatFloat(math.Pow(float64(c.Base62), 2)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(3844), *big.NewInt(0), *big.NewInt(3843)}},
 		{"22", args{238327, 3, []string{}, 6}, "qZP", false, nil},
 		{"23", args{238328, 3, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 238328, strconv.FormatFloat(math.Pow(float64(c.Base62), 3)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(238328), *big.NewInt(0), *big.NewInt(238327)}},
 		{"24", args{14776335, 4, []string{}, 6}, "9ZTX", false, nil},
 		{"25", args{14776336, 4, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 14776336, strconv.FormatFloat(math.Pow(float64(c.Base62), 4)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(14776336), *big.NewInt(0), *big.NewInt(14776335)}},
 		{"26", args{916132831, 5, []string{}, 6}, "1JD5T", false, nil},
 		{"27", args{916132832, 5, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 916132832, strconv.FormatFloat(math.Pow(float64(c.Base62), 5)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(916132832), *big.NewInt(0), *big.NewInt(916132831)}},
 		{"28", args{56800235583, 6, []string{}, 6}, "Uawe3Z", false, nil},
 		{"29", args{56800235584, 6, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 56800235584, strconv.FormatFloat(math.Pow(float64(c.Base62), 6)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(56800235584), *big.NewInt(0), *big.NewInt(56800235583)}},
 		{"30", args{3521614606207, 7, []string{}, 6}, "qh9S9tP", false, nil},
 		{"31", args{3521614606208, 7, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 3521614606208, strconv.FormatFloat(math.Pow(float64(c.Base62), 7)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(3521614606208), *big.NewInt(0), *big.NewInt(3521614606207)}},
 		{"32", args{218340105584895, 8, []string{}, 6}, "sZXQyZ5x", false, nil},
 		{"33", args{218340105584896, 8, []string{}, 6}, "", true,
-			fmt.Errorf("invalid counter: %d, must be less than or equal %s", 218340105584896, strconv.FormatFloat(math.Pow(float64(c.Base62), 8)-1, 'f', 0, 64))},
+			&c.ErrInvalidCounter{*big.NewInt(218340105584896), *big.NewInt(0), *big.NewInt(218340105584895)}},
 	}
 
 	for _, tt := range tests {
@@ -195,6 +194,9 @@ func TestCodec_GenerateHash_ValidationErrors(t *testing.T) {
 			if err != nil && err.Error() != tt.err.Error() {
 				t.Errorf("GenerateHash() error = %v, wantErrMessage %v", err, tt.err)
 				return
+			}
+			if err != nil && reflect.TypeOf(err) != reflect.TypeOf(tt.err) {
+				t.Errorf("GenerateHash() error type = %T, want %T", err, tt.err)
 			}
 			if got != tt.want {
 				t.Errorf("GenerateHash() = %v, want %v", got, tt.want)
@@ -236,7 +238,7 @@ func TestCodec_ReverseHash_ValidationErrors(t *testing.T) {
 		{"11", args{"abc", []string{}, 11}, nil, true,
 			fmt.Errorf("invalid rounds: %d, must be between %d and %d", 11, c.MinRounds, c.MaxRounds)},
 		{"12", args{"", []string{}, 8}, nil, true,
-			fmt.Errorf("invalid length: %d, must be between 1 and %d", 0, c.MaxHashLength)},
+			fmt.Errorf("invalid hash length: %d, must be between 1 and %d", 0, c.MaxHashLength)},
 		{"13", args{"F", []string{}, 6}, big.NewInt(1), false, nil},
 		{
 			"14",
@@ -251,7 +253,8 @@ func TestCodec_ReverseHash_ValidationErrors(t *testing.T) {
 			false,
 			nil,
 		},
-		{"15", args{"abcdefghijklm", []string{}, 8}, nil, true, fmt.Errorf("invalid length: %d, must be between 1 and %d", 13, c.MaxHashLength)},
+		{"15", args{"abcdefghijklm", []string{}, 8}, nil, true,
+			fmt.Errorf("invalid hash length: %d, must be between 1 and %d", 13, c.MaxHashLength)},
 	}
 
 	for _, tt := range tests {

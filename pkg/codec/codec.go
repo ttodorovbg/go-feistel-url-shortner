@@ -169,10 +169,10 @@ func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (stri
 	if err := validateRounds(rounds); err != nil {
 		return "", err
 	}
-	if err := validateLength(length); err != nil {
+	if err := validateHashLength(length); err != nil {
 		return "", err
 	}
-	if err := validateKey(key); err != nil {
+	if err := validateKeyLength(key); err != nil {
 		return "", err
 	}
 	if err := validateCounter(counter, length); err != nil {
@@ -195,10 +195,10 @@ func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (stri
 
 func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
 
-	if err := validateHash(hash); err != nil {
+	if err := validateHashChars(hash); err != nil {
 		return nil, err
 	}
-	if err := validateKey(key); err != nil {
+	if err := validateKeyLength(key); err != nil {
 		return nil, err
 	}
 
@@ -213,7 +213,7 @@ func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
 	if err := validateRounds(rounds); err != nil {
 		return nil, err
 	}
-	if err := validateLength(uint8(length)); err != nil {
+	if err := validateHashLength(uint8(length)); err != nil {
 		return nil, err
 	}
 

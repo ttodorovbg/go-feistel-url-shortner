@@ -264,3 +264,47 @@ The following parameters are used to configure the behavior of the codec. When u
 
 > **Pro Tip:** To convert a `*big.Int` result back to `uint64`, you can use the `.Uint64()` method:  
 > `originalValue := counter.Uint64()`
+
+## Usage as a CLI Tool
+
+The CLI supports two commands: `encode` and `decode`.
+
+### Basic Syntax
+
+```bash
+# Encode a counter to a short code
+./shortener encode -counter=12345 -length=6 -key="mysecret" -rounds=4
+
+# Decode a short code back to a counter
+./shortener decode -hash="aB3xYz" -key="mysecret" -rounds=4
+```
+
+### Flags and Defaults
+
+| Flag       | Command  | Type     | Default                      | Description                           |
+| ---------- | -------- | -------- | ---------------------------- | ------------------------------------- |
+| `-counter` | `encode` | `uint64` | `0` (required)               | Sequential integer to encode          |
+| `-hash`    | `decode` | `string` | `""` (required)              | Short code to decode                  |
+| `-length`  | both     | `uint`   | `7`                          | Output code length (2-12 recommended) |
+| `-key`     | both     | `string` | `$FEISTEL_URL_SHORTENER_KEY` | Secret encryption key (required)      |
+| `-rounds`  | both     | `uint`   | `6`                          | Feistel cipher rounds (minimum 3)     |
+
+### Environment Variable Support
+
+The `-key` flag can be omitted if the `FEISTEL_URL_SHORTENER_KEY` environment variable is set:
+
+```bash
+export FEISTEL_URL_SHORTENER_KEY="mysecret"
+./shortener encode -counter=100
+./shortener decode -hash="xK9m"
+```
+
+### Example Output
+
+```bash
+$ ./shortener encode -counter=42 -length=4 -key="demo"
+CWbL
+
+$ ./shortener decode -hash="CWbL" -key="demo"
+42
+```
