@@ -315,41 +315,51 @@ $ ./shortener decode -hash="CWbL" -key="demo"
 import "errors"
 
 func handleCodecError(err error) {
-    if err == nil {
-        return
-    }
+	if err == nil {
+		return
+	}
 
-    // 1. Check for ErrInvalidRounds
-    var roundsErr *ErrInvalidRounds
-    if errors.As(err, &roundsErr) {
-        // Handle rounds-specific logic
-    }
+	// Check for ErrInvalidRounds
+	var roundsErr *codec.ErrInvalidRounds
+	if errors.As(err, &roundsErr) {
+		fmt.Println(roundsErr)
+		return
+		// Handle rounds-specific logic
+	}
 
-    // 2. Check for ErrInvalidHashChar
-    var charErr *ErrInvalidHashChar
-    if errors.As(err, &charErr) {
-        // Handle invalid character
-    }
+	// Check for ErrInvalidHashChar
+	var charErr *codec.ErrInvalidHashChar
+	if errors.As(err, &charErr) {
+		// Handle invalid character
+		fmt.Println(charErr)
+		return
+	}
 
-    // 3. Check for ErrInvalidHashLength
-    var lenErr *ErrInvalidHashLength
-    if errors.As(err, &lenErr) {
-        // Handle length mismatch
-    }
+	// Check for ErrInvalidHashLength
+	var lenErr *codec.ErrInvalidHashLength
+	if errors.As(err, &lenErr) {
+		// Handle length mismatch
+		fmt.Println(lenErr)
+		return
+	}
 
-    // 4. Check for ErrInvalidKeyLength
-    var keyErr *ErrInvalidKeyLength
-    if errors.As(err, &keyErr) {
-        // Handle key validation failure
-    }
+	// Check for ErrInvalidKeyLength
+	var keyErr *codec.ErrInvalidKeyLength
+	if errors.As(err, &keyErr) {
+		// Handle key validation failure
+		fmt.Println(keyErr)
+		return
+	}
 
-    // 5. Check for ErrInvalidCounter
-    var counterErr *ErrInvalidCounter
-    if errors.As(err, &counterErr) {
-        // Handle out-of-range counter
-    }
+	// Check for ErrInvalidCounter
+	var counterErr *codec.ErrInvalidCounter
+	if errors.As(err, &counterErr) {
+		// Handle out-of-range counter
+		fmt.Println(counterErr)
+		return
+	}
 
-    // Fallback: unknown/unexpected error
-    panic(fmt.Errorf("unexpected codec error: %w", err))
+	// Fallback: unknown/unexpected error
+	panic(fmt.Errorf("unexpected codec error: %w", err))
 }
 ```
