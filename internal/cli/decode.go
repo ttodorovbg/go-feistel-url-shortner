@@ -14,6 +14,7 @@ func runDecode(args []string) (string, error) {
 	hash := cmd.String("hash", "", "hash string")
 	keyFlag := cmd.String("key", "", "secret key (optional if FEISTEL_URL_SHORTENER_KEY env is set)")
 	rounds := cmd.Uint("rounds", 6, "rounds")
+	alphabet := cmd.String("alphabet", "", "custom alphabet")
 
 	if err := cmd.Parse(args); err != nil {
 		return "", err
@@ -28,7 +29,7 @@ func runDecode(args []string) (string, error) {
 		return "", err
 	}
 
-	counter, err := codec.ReverseHash(*hash, key, uint8(*rounds))
+	counter, err := codec.ReverseHash(*hash, key, uint8(*rounds), *alphabet)
 	if err != nil {
 		return "", err
 	}

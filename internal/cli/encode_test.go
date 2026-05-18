@@ -2,6 +2,8 @@ package cli
 
 import (
 	"testing"
+
+	"github.com/ttodorovbg/go-feistel-url-shortener/pkg/codec"
 )
 
 func TestRunEncode_FlagKey(t *testing.T) {
@@ -11,6 +13,7 @@ func TestRunEncode_FlagKey(t *testing.T) {
 		"--length", "8",
 		"--key", "qweqweqwe",
 		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := runEncode(args)
@@ -30,6 +33,8 @@ func TestRunEncode_EnvKey(t *testing.T) {
 	args := []string{
 		"--counter", "123",
 		"--length", "8",
+		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := runEncode(args)

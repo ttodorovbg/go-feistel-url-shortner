@@ -8,7 +8,7 @@ import (
 
 func TestRunDecode_FlagKey(t *testing.T) {
 
-	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6)
+	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6, codec.Base62Alphabet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,6 +16,8 @@ func TestRunDecode_FlagKey(t *testing.T) {
 	args := []string{
 		"--hash", hash,
 		"--key", "qweqweqwe",
+		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := runDecode(args)
@@ -32,13 +34,15 @@ func TestRunDecode_EnvKey(t *testing.T) {
 
 	t.Setenv("FEISTEL_URL_SHORTENER_KEY", "qweqweqwe")
 
-	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6)
+	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6, codec.Base62Alphabet)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	args := []string{
 		"--hash", hash,
+		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := runDecode(args)

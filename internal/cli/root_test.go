@@ -15,6 +15,8 @@ func TestExecute_Encode(t *testing.T) {
 		"--counter", "123",
 		"--length", "8",
 		"--key", "qweqweqwe",
+		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := Execute()
@@ -29,7 +31,7 @@ func TestExecute_Encode(t *testing.T) {
 
 func TestExecute_Decode(t *testing.T) {
 
-	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6)
+	hash, err := codec.GenerateHash(123, 8, "qweqweqwe", 6, codec.Base62Alphabet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,6 +41,8 @@ func TestExecute_Decode(t *testing.T) {
 		"decode",
 		"--hash", hash,
 		"--key", "qweqweqwe",
+		"--rounds", "6",
+		"--alphabet", codec.Base62Alphabet,
 	}
 
 	result, err := Execute()

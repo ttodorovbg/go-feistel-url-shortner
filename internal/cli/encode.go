@@ -15,6 +15,7 @@ func runEncode(args []string) (string, error) {
 	length := cmd.Uint("length", 8, "")
 	keyFlag := cmd.String("key", "", "secret key (optional if FEISTEL_URL_SHORTENER_KEY env is set)")
 	rounds := cmd.Uint("rounds", 6, "rounds")
+	alphabet := cmd.String("alphabet", "", "custom alphabet")
 
 	if err := cmd.Parse(args); err != nil {
 		return "", err
@@ -25,7 +26,7 @@ func runEncode(args []string) (string, error) {
 		return "", err
 	}
 
-	hash, err := codec.GenerateHash(uint64(*counter), uint8(*length), key, uint8(*rounds))
+	hash, err := codec.GenerateHash(uint64(*counter), uint8(*length), key, uint8(*rounds), *alphabet)
 	if err != nil {
 		return "", err
 	}

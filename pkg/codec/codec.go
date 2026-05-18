@@ -20,30 +20,37 @@ import (
 */
 
 type Codec struct {
-	key    string
-	length uint8
-	rounds uint8
+	key      string
+	length   uint8
+	rounds   uint8
+	alphabet string
 }
 
-const base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const Base62 = 62
+const Base62Alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// const Base62 = 62
 const MaxLengthForFloat64 uint8 = 8
 
 type Config struct {
-	Key    string
-	Length uint8
-	Rounds uint8
+	Key      string
+	Length   uint8
+	Rounds   uint8
+	Alphabet string
 }
 
 var defaultConfig = Config{
-	Key:    "",
-	Length: 8,
-	Rounds: 6,
+	Key:      "",
+	Length:   8,
+	Rounds:   6,
+	Alphabet: Base62Alphabet,
 }
 
 type Option func(*Config)
 
-var big62 = big.NewInt(Base62)
+// var Base = len(Base62Alphabet)
+
+// var big62 = big.NewInt(Base62)
+//var bigBase = big.NewInt(int64(Base))
 
 func NewCodec(opts ...Option) *Codec {
 	config := defaultConfig
@@ -53,9 +60,10 @@ func NewCodec(opts ...Option) *Codec {
 	}
 
 	return &Codec{
-		key:    config.Key,
-		length: config.Length,
-		rounds: config.Rounds,
+		key:      config.Key,
+		length:   config.Length,
+		rounds:   config.Rounds,
+		alphabet: config.Alphabet,
 	}
 }
 
@@ -77,23 +85,51 @@ func WithRounds(n uint8) Option {
 	}
 }
 
-func toBase62(num *big.Int, length uint8) string {
+func WithAlphabet(alphabet string) Option {
+	return func(c *Config) {
+		c.Alphabet = alphabet
+	}
+}
+
+// func toBase62(num *big.Int, length uint8) string {
+// 	n := new(big.Int).Set(num)
+// 	chars := make([]byte, length)
+// 	mod := new(big.Int)
+
+// 	for i := int(length) - 1; i >= 0; i-- {
+// 		n.DivMod(n, big62, mod)
+// 		chars[i] = base62Alphabet[mod.Int64()]
+// 	}
+// 	return string(chars)
+// }
+
+func toBase(alphabet string, num *big.Int, length uint8, bigBase *big.Int) string {
 	n := new(big.Int).Set(num)
 	chars := make([]byte, length)
 	mod := new(big.Int)
-
+	//fmt.Println(alphabet, length, n, num, bigBase)
 	for i := int(length) - 1; i >= 0; i-- {
-		n.DivMod(n, big62, mod)
-		chars[i] = base62Alphabet[mod.Int64()]
+		n.DivMod(n, bigBase, mod)
+		chars[i] = alphabet[mod.Int64()]
 	}
 	return string(chars)
 }
 
-func fromBase62(s string) *big.Int {
+// func fromBase62(s string) *big.Int {
+// 	num := big.NewInt(0)
+// 	for _, c := range s {
+// 		index := int64(strings.IndexRune(base62Alphabet, c))
+// 		num.Mul(num, big62)
+// 		num.Add(num, big.NewInt(index))
+// 	}
+// 	return num
+// }
+
+func fromBase(alphabet string, s string, bigBase *big.Int) *big.Int {
 	num := big.NewInt(0)
 	for _, c := range s {
-		index := int64(strings.IndexRune(base62Alphabet, c))
-		num.Mul(num, big62)
+		index := int64(strings.IndexRune(alphabet, c))
+		num.Mul(num, bigBase)
 		num.Add(num, big.NewInt(index))
 	}
 	return num
@@ -158,13 +194,7 @@ func feistelInverse(scrambled *big.Int, rounds uint8, key string, domain *big.In
 	return combined
 }
 
-func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (string, error) {
-
-	rounds := defaultConfig.Rounds
-
-	if len(args) > 0 {
-		rounds = args[0]
-	}
+func GenerateHash(counter uint64, length uint8, key string, rounds uint8, alphabet string) (string, error) {
 
 	if err := validateRounds(rounds); err != nil {
 		return "", err
@@ -178,67 +208,79 @@ func GenerateHash(counter uint64, length uint8, key string, args ...uint8) (stri
 	if err := validateCounter(counter, length); err != nil {
 		return "", err
 	}
+	if err := validateAlphabetLength(alphabet); err != nil {
+		return "", err
+	}
+	if err := validateAlphabetChars(alphabet); err != nil {
+		return "", err
+	}
 
 	var domain *big.Int
+	base := len(alphabet)
+	bigBase := big.NewInt(int64(base))
 
 	if length <= MaxLengthForFloat64 {
-		f := math.Pow(float64(Base62), float64(length))
+		f := math.Pow(float64(base), float64(length))
 		domain = big.NewInt(int64(f))
 	} else {
-		domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
+		domain = new(big.Int).Exp(bigBase, big.NewInt(int64(length)), nil)
 	}
 
 	scrambled := feistelBijective(big.NewInt(int64(counter)), rounds, key, domain)
 
-	return toBase62(scrambled, length), nil
+	//return toBase62(scrambled, length), nil
+	return toBase(alphabet, scrambled, length, bigBase), nil
 }
 
-func ReverseHash(hash string, key string, args ...uint8) (*big.Int, error) {
+func ReverseHash(hash string, key string, rounds uint8, alphabet string) (*big.Int, error) {
 
-	if err := validateHashChars(hash); err != nil {
+	length := len(hash)
+
+	if err := validateHashChars(hash, alphabet); err != nil {
 		return nil, err
 	}
 	if err := validateKeyLength(key); err != nil {
 		return nil, err
 	}
-
-	rounds := defaultConfig.Rounds
-
-	if len(args) > 0 {
-		rounds = args[0]
+	if err := validateHashLength(uint8(length)); err != nil {
+		return nil, err
 	}
-
-	length := len(hash)
-
 	if err := validateRounds(rounds); err != nil {
 		return nil, err
 	}
-	if err := validateHashLength(uint8(length)); err != nil {
+	if err := validateAlphabetLength(alphabet); err != nil {
+		return nil, err
+	}
+	if err := validateAlphabetChars(alphabet); err != nil {
 		return nil, err
 	}
 
 	var domain *big.Int
+	base := len(alphabet)
+	bigBase := big.NewInt(int64(base))
 
 	if length <= int(MaxLengthForFloat64) {
-		f := math.Pow(float64(Base62), float64(length))
+		f := math.Pow(float64(base), float64(length))
 		domain = big.NewInt(int64(f))
 	} else {
-		domain = new(big.Int).Exp(big62, big.NewInt(int64(length)), nil)
+		domain = new(big.Int).Exp(bigBase, big.NewInt(int64(length)), nil)
 	}
 
-	scrambled := fromBase62(hash)
+	//scrambled := fromBase62(hash)
+	scrambled := fromBase(alphabet, hash, bigBase)
 
 	return feistelInverse(scrambled, rounds, key, domain), nil
 }
 
 func (c *Codec) GenerateHash(counter uint64) (string, error) {
-	return GenerateHash(counter, c.length, c.key, c.rounds)
+	return GenerateHash(counter, c.length, c.key, c.rounds, c.alphabet)
 }
 
 func (c *Codec) ReverseHash(hash string) (*big.Int, error) {
-	return ReverseHash(hash, c.key, c.rounds)
+	return ReverseHash(hash, c.key, c.rounds, c.alphabet)
 }
 
-func MaxCounterForLength(length uint8) int64 {
-	return new(big.Int).Exp(big62, big.NewInt(int64(length)), nil).Int64()
-}
+// func MaxCounterForLength(length uint8) int64 {
+// 	bigBase := big.NewInt(int64(Base))
+// 	return new(big.Int).Exp(bigBase, big.NewInt(int64(length)), nil).Int64()
+// }
